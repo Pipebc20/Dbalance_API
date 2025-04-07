@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Ingreso;
+use App\Models\Gasto;
 
 class User extends Authenticatable
 {
@@ -42,4 +44,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    // Relación con ingresos (1 usuario puede tener muchos ingresos)
+    public function ingresos()
+    {
+        return $this->hasMany(Ingreso::class);
+    }
+
+    // Relación con gastos (1 usuario puede tener muchos gastos)
+    public function gastos()
+    {
+        return $this->hasMany(Gasto::class);
+    }
 }
