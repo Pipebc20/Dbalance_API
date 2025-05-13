@@ -12,7 +12,7 @@ return new class extends Migration
     public function up()
 {
     Schema::create('gastos', function (Blueprint $table) {
-        $table->id();
+        $table->id()->startingValue(1);
         $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Relación con users
         $table->string('categoria');
         $table->decimal('monto', 10, 2);

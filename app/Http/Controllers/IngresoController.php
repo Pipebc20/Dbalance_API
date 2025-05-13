@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Ingreso;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Auth;
 
 class IngresoController extends Controller
 {
@@ -12,18 +12,19 @@ class IngresoController extends Controller
     {
         $validatedData = $request->validate([
             'categoria' => 'required|string|max:255',
-            'monto' => 'required|numeric',
-            'fecha' => 'required|date',
+            'monto' => 'required|numeric|min:0|max:99999999',
+            'fecha' => ['required', 'date', function ($attribute, $value, $fail) {
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+                    $fail('El formato de fecha debe ser YYYY-MM-DD');
+                }
+            }],
             'descripcion' => 'nullable|string',
         ]);
 
-        $ingreso = Ingreso::create([
-            'user_id' => auth()->id(), // 🔹 Asigna el usuario autenticado
-            'categoria' => $validatedData['categoria'],
-            'monto' => $validatedData['monto'],
-            'fecha' => $validatedData['fecha'],
-            'descripcion' => $validatedData['descripcion'] ?? null,
-        ]);
+        $ingreso = new Ingreso();
+        $ingreso->user_id = auth()->id();
+        $ingreso->fill($validatedData);
+        $ingreso->save();
 
         return response()->json([
             'message' => 'Ingreso registrado correctamente.',
@@ -33,21 +34,31 @@ class IngresoController extends Controller
 
     public function index()
     {
-        $ingresos = Ingreso::all();
+        $ingresos = Ingreso::where('user_id', auth()->id())
+            ->whereNotNull('categoria')
+            ->where('categoria', '!=', '')
+            ->orderBy('id') // Ordenar por ID (puedes cambiar a 'fecha' si prefieres)
+            ->get();
+
+        // Asignar un número de orden dinámico por usuario
+        $ingresosConOrden = $ingresos->map(function ($ingreso, $index) {
+            $ingreso->numero_orden = $index + 1;
+            return $ingreso;
+        });
 
         return response()->json([
             'message' => 'Lista de ingresos obtenida correctamente.',
-            'data' => $ingresos
+            'data' => $ingresosConOrden
         ], 200);
     }
 
     public function destroy($id)
     {
-        $ingreso = Ingreso::find($id);
+        $ingreso = Ingreso::where('user_id', auth()->id())->find($id);
 
         if (!$ingreso) {
             return response()->json([
-                'message' => 'Ingreso no encontrado.',
+                'message' => 'Ingreso no encontrado o no autorizado.',
             ], 404);
         }
 
@@ -60,11 +71,11 @@ class IngresoController extends Controller
 
     public function update(Request $request, $id)
     {
-        $ingreso = Ingreso::find($id);
+        $ingreso = Ingreso::where('user_id', auth()->id())->find($id);
 
         if (!$ingreso) {
             return response()->json([
-                'message' => 'Ingreso no encontrado.',
+                'message' => 'Ingreso no encontrado o no autorizado.',
             ], 404);
         }
 
@@ -85,11 +96,11 @@ class IngresoController extends Controller
 
     public function show($id)
     {
-        $ingreso = Ingreso::find($id);
+        $ingreso = Ingreso::where('user_id', auth()->id())->find($id);
 
         if (!$ingreso) {
             return response()->json([
-                'message' => 'Ingreso no encontrado.',
+                'message' => 'Ingreso no encontrado o no autorizado.',
             ], 404);
         }
 

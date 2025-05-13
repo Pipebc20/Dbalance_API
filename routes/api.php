@@ -11,33 +11,34 @@ use Illuminate\Http\Request;
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
+| Rutas API para la aplicación DBalance
+| Todas las rutas aquí definidas serán prefijadas con /api
 |
 */
 
-// Rutas públicas (no requieren autenticación)
+// 1. Rutas Públicas (sin autenticación)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/password/email', [AuthController::class, 'sendResetLinkEmail']); // Nueva ruta para restablecimiento
 
-// Rutas protegidas (requieren autenticación)
+// 2. Rutas Protegidas (requieren autenticación Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
-    // Rutas de ingresos
+
+    // 2.1 Rutas de Ingresos (CRUD completo)
     Route::get('/ingresos', [IngresoController::class, 'index']);
     Route::post('/ingresos', [IngresoController::class, 'store']);
     Route::get('/ingresos/{id}', [IngresoController::class, 'show']);
     Route::put('/ingresos/{id}', [IngresoController::class, 'update']);
     Route::delete('/ingresos/{id}', [IngresoController::class, 'destroy']);
 
-    // Rutas de gastos
-    Route::post('/gastos', [GastoController::class, 'store']);
+    // 2.2 Rutas de Gastos (CRUD completo)
     Route::get('/gastos', [GastoController::class, 'index']);
-    Route::delete('/gastos/{id}', [GastoController::class, 'destroy']);
-    Route::put('/gastos/{id}', [GastoController::class, 'update']);
+    Route::post('/gastos', [GastoController::class, 'store']);
     Route::get('/gastos/{id}', [GastoController::class, 'show']);
+    Route::put('/gastos/{id}', [GastoController::class, 'update']);
+    Route::delete('/gastos/{id}', [GastoController::class, 'destroy']);
 
-    // Otras rutas protegidas
+    // 2.3 Rutas de Autenticación y Usuario
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', function (Request $request) {
         return $request->user();

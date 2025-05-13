@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Gasto;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Auth;
 
 class GastoController extends Controller
 {
@@ -12,18 +12,19 @@ class GastoController extends Controller
     {
         $validatedData = $request->validate([
             'categoria' => 'required|string|max:255',
-            'monto' => 'required|numeric',
-            'fecha' => 'required|date',
+            'monto' => 'required|numeric|min:0|max:99999999',
+            'fecha' => ['required', 'date', function ($attribute, $value, $fail) {
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+                    $fail('El formato de fecha debe ser YYYY-MM-DD');
+                }
+            }],
             'descripcion' => 'nullable|string',
         ]);
 
-        $gasto = Gasto::create([
-            'user_id' => auth()->id(), // 🔹 Asigna el usuario autenticado
-            'categoria' => $validatedData['categoria'],
-            'monto' => $validatedData['monto'],
-            'fecha' => $validatedData['fecha'],
-            'descripcion' => $validatedData['descripcion'] ?? null,
-        ]);
+        $gasto = new Gasto();
+        $gasto->user_id = auth()->id();
+        $gasto->fill($validatedData);
+        $gasto->save();
 
         return response()->json([
             'message' => 'Gasto registrado correctamente.',
@@ -33,23 +34,32 @@ class GastoController extends Controller
 
     public function index()
     {
-        $gastos = Gasto::all();
+        $gastos = Gasto::where('user_id', auth()->id())
+            ->orderBy('id') // Ordenar por ID (puedes cambiar a 'fecha' si prefieres)
+            ->get();
+
+        // Asignar un número de orden dinámico por usuario
+        $gastosConOrden = $gastos->map(function ($gasto, $index) {
+            $gasto->numero_orden = $index + 1;
+            return $gasto;
+        });
 
         return response()->json([
             'message' => 'Lista de gastos obtenida correctamente.',
-            'data' => $gastos
+            'data' => $gastosConOrden
         ], 200);
     }
 
     public function destroy($id)
     {
-        $gasto = Gasto::find($id);
+        $gasto = Gasto::where('user_id', auth()->id())->find($id);
 
         if (!$gasto) {
             return response()->json([
-                'message' => 'Gasto no encontrado.',
+                'message' => 'Gasto no encontrado o no autorizado.',
             ], 404);
         }
+
         $gasto->delete();
 
         return response()->json([
@@ -59,11 +69,11 @@ class GastoController extends Controller
 
     public function update(Request $request, $id)
     {
-        $gasto = Gasto::find($id);
+        $gasto = Gasto::where('user_id', auth()->id())->find($id);
 
         if (!$gasto) {
             return response()->json([
-                'message' => 'Gasto no encontrado.',
+                'message' => 'Gasto no encontrado o no autorizado.',
             ], 404);
         }
 
@@ -84,11 +94,11 @@ class GastoController extends Controller
 
     public function show($id)
     {
-        $gasto = Gasto::find($id);
+        $gasto = Gasto::where('user_id', auth()->id())->find($id);
 
         if (!$gasto) {
             return response()->json([
-                'message' => 'Gasto no encontrado.',
+                'message' => 'Gasto no encontrado o no autorizado.',
             ], 404);
         }
 
