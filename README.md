@@ -10,7 +10,7 @@ De igual forma, tambien se agrego un Auth para autenticar a los usuarios que van
 Para la correcta ejecución de este proyecto, necesitas tener las siguientes tecnologías instaladas en tu ordenador.
 * PHP ^8.1
 * Composer 2
-* MySQL o PostreSQL
+* MySQL o PostgreSQL
 
 ## Instalación 🔧
 
