@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:4200','https://dbalance-app.vercel.app','https://dbalance-website.vercel.app',],
+    'allowed_origins' => ['http://localhost:4200','https://dbalance-app.vercel.app','https://dbalance-website.vercel.app'],
 
     'allowed_origins_patterns' => [],
 
