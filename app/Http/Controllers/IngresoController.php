@@ -32,25 +32,37 @@ class IngresoController extends Controller
         ], 201);
     }
 
-    public function index()
-    {
-        $ingresos = Ingreso::where('user_id', auth()->id())
-            ->whereNotNull('categoria')
-            ->where('categoria', '!=', '')
-            ->orderBy('id') // Ordenar por ID (puedes cambiar a 'fecha' si prefieres)
-            ->get();
+    public function index(Request $request)
+{
+    $request->validate([
+        'mes'  => 'nullable|integer|between:1,12',
+        'anio' => 'nullable|integer|min:2000|max:2100',
+    ]);
 
-        // Asignar un número de orden dinámico por usuario
-        $ingresosConOrden = $ingresos->map(function ($ingreso, $index) {
-            $ingreso->numero_orden = $index + 1;
-            return $ingreso;
-        });
+    $query = Ingreso::where('user_id', auth()->id())
+        ->whereNotNull('categoria')
+        ->where('categoria', '!=', '');
 
-        return response()->json([
-            'message' => 'Lista de ingresos obtenida correctamente.',
-            'data' => $ingresosConOrden
-        ], 200);
+    if ($request->filled('mes')) {
+        $query->whereMonth('fecha', $request->mes);
     }
+    if ($request->filled('anio')) {
+        $query->whereYear('fecha', $request->anio);
+    }
+
+    $ingresos = $query->orderBy('id')->get();
+
+    // Asignar un número de orden dinámico por usuario
+    $ingresosConOrden = $ingresos->map(function ($ingreso, $index) {
+        $ingreso->numero_orden = $index + 1;
+        return $ingreso;
+    });
+
+    return response()->json([
+        'message' => 'Lista de ingresos obtenida correctamente.',
+        'data' => $ingresosConOrden
+    ], 200);
+}
 
     public function destroy($id)
     {

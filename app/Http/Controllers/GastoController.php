@@ -32,23 +32,35 @@ class GastoController extends Controller
         ], 201);
     }
 
-    public function index()
-    {
-        $gastos = Gasto::where('user_id', auth()->id())
-            ->orderBy('id') // Ordenar por ID (puedes cambiar a 'fecha' si prefieres)
-            ->get();
+    public function index(Request $request)
+{
+    $request->validate([
+        'mes'  => 'nullable|integer|between:1,12',
+        'anio' => 'nullable|integer|min:2000|max:2100',
+    ]);
 
-        // Asignar un número de orden dinámico por usuario
-        $gastosConOrden = $gastos->map(function ($gasto, $index) {
-            $gasto->numero_orden = $index + 1;
-            return $gasto;
-        });
+    $query = Gasto::where('user_id', auth()->id());
 
-        return response()->json([
-            'message' => 'Lista de gastos obtenida correctamente.',
-            'data' => $gastosConOrden
-        ], 200);
+    if ($request->filled('mes')) {
+        $query->whereMonth('fecha', $request->mes);
     }
+    if ($request->filled('anio')) {
+        $query->whereYear('fecha', $request->anio);
+    }
+
+    $gastos = $query->orderBy('id')->get();
+
+    // Asignar un número de orden dinámico por usuario
+    $gastosConOrden = $gastos->map(function ($gasto, $index) {
+        $gasto->numero_orden = $index + 1;
+        return $gasto;
+    });
+
+    return response()->json([
+        'message' => 'Lista de gastos obtenida correctamente.',
+        'data' => $gastosConOrden
+    ], 200);
+}
 
     public function destroy($id)
     {
