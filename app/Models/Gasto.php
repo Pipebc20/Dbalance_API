@@ -9,8 +9,6 @@ class Gasto extends Model
 {
     use HasFactory;
 
-    public $incrementing = false; // Desactiva el auto-incremento
-
     protected $fillable = ['categoria', 'monto', 'fecha', 'descripcion', 'user_id'];
 
     protected static function boot()

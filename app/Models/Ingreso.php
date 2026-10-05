@@ -9,8 +9,6 @@ class Ingreso extends Model
 {
     use HasFactory;
 
-    public $incrementing = false; // Desactiva el auto-incremento
-
     protected $fillable = ['categoria', 'monto', 'descripcion', 'fecha', 'user_id'];
 
     protected static function boot()
