@@ -4,6 +4,7 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\IngresoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PresupuestoController;
 use Illuminate\Http\Request;
 
 /*
@@ -37,6 +38,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/gastos/{id}', [GastoController::class, 'show']);
     Route::put('/gastos/{id}', [GastoController::class, 'update']);
     Route::delete('/gastos/{id}', [GastoController::class, 'destroy']);
+
+    // 2.2b Rutas de Presupuestos
+    Route::get('/presupuestos/categorias', [PresupuestoController::class, 'categorias']);
+    Route::get('/presupuestos', [PresupuestoController::class, 'index']);
+    Route::post('/presupuestos', [PresupuestoController::class, 'store']);
+    Route::put('/presupuestos/{id}', [PresupuestoController::class, 'update']);
+    Route::delete('/presupuestos/{id}', [PresupuestoController::class, 'destroy']);
 
     // 2.3 Rutas de Autenticación y Usuario
     Route::post('/logout', [AuthController::class, 'logout']);
