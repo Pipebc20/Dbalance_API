@@ -4,6 +4,7 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\IngresoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\PresupuestoController;
 use Illuminate\Http\Request;
 
@@ -20,6 +21,7 @@ use Illuminate\Http\Request;
 // 1. Rutas Públicas (sin autenticación)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/auth/google', [GoogleAuthController::class, 'login']);
 Route::post('/password/email', [AuthController::class, 'sendResetLinkEmail']); // Nueva ruta para restablecimiento
 
 // 2. Rutas Protegidas (requieren autenticación Sanctum)
